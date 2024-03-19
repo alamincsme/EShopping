@@ -1,4 +1,4 @@
-package io.alamincsme.dto;
+package io.alamincsme.payload;
 
 import io.alamincsme.model.Role;
 import lombok.AllArgsConstructor;

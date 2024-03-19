@@ -1,4 +1,4 @@
-package io.alamincsme.repositories;
+package io.alamincsme.repository;
 
 import io.alamincsme.model.Address;
 import org.springframework.data.jpa.repository.JpaRepository;

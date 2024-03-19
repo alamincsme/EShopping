@@ -1,4 +1,4 @@
-package io.alamincsme.dto;
+package io.alamincsme.payload;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
