@@ -16,6 +16,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,11 +45,11 @@ public class ProductServiceImp implements ProductService {
 
         List<Product> products  = category.getProducts() ;
 
-        for (int i = 0 ; i < products.size() ; ++i) {
-            if (products.get(i).getProductName().equals(product.getProductName())
-                        && products.get(i).getDescription().equals(product.getDescription())) {
+        for (Product value : products) {
+            if (value.getProductName().equals(product.getProductName())
+                    && value.getDescription().equals(product.getDescription())) {
 
-                isProductNotPresent = false ;
+                isProductNotPresent = false;
                 break;
 
             }
@@ -82,6 +84,40 @@ public class ProductServiceImp implements ProductService {
 
 
         ProductResponse productResponse = new ProductResponse();
+        return getProductResponse(pageProducts, productDTOS, productResponse);
+    }
+
+    @Override
+    public ProductResponse searchByCategory(Long categoryId, Integer pageNo, Integer pageSize, String sortBy, String sortOrder) {
+       Category category = categoryRepo.findById(categoryId)
+               .orElseThrow(() -> new  ResourceNotFoundException("Category", "CategoryId", categoryId));
+
+
+
+       Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending() ;
+       Pageable pageDetails = PageRequest.of(pageNo, pageSize, sortByAndOrder);
+
+       //product search by category.
+       var pageProducts  = productRepo.findByCategory(category, pageDetails);
+        System.out.println(pageProducts);
+       var products = pageProducts.getContent();
+
+       if (products.isEmpty()) {
+           throw  new APIException("Category doesn't contain any product!");
+       }
+
+        List<ProductDTO> productDTOS = products
+                .stream()
+                .map(product -> modelMapper.map(product , ProductDTO.class))
+                .collect(Collectors.toList());
+
+       var productResponse = new ProductResponse();
+       return getProductResponse(pageProducts, productDTOS, productResponse);
+
+    }
+
+
+    private ProductResponse getProductResponse(Page<Product> pageProducts, List<ProductDTO> productDTOS, ProductResponse productResponse) {
         productResponse.setContent(productDTOS);
         productResponse.setPageNo(pageProducts.getNumber());
         productResponse.setPageSize(pageProducts.getSize());
@@ -92,10 +128,6 @@ public class ProductServiceImp implements ProductService {
         return productResponse ;
     }
 
-    @Override
-    public ProductResponse searchByCategory(Long categoryId, Integer pageNo, Integer pageSize, String sortBy, String sortOrder) {
-        return null;
-    }
 
     @Override
     public ProductDTO updateProduct(Long productId, Product product) {
