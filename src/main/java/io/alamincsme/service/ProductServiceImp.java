@@ -120,10 +120,6 @@ public class ProductServiceImp implements ProductService {
 
     }
 
-
-
-
-
     @Override
     public ProductDTO updateProduct(Long productId, Product product) {
         Product productFromDB = productRepo.findById(productId)
@@ -143,7 +139,6 @@ public class ProductServiceImp implements ProductService {
         return modelMapper.map(product, ProductDTO.class);
 
     }
-
 
     @Override
     public ProductResponse searchProductByKeyword(String keyword, Integer pageNo, Integer pageSize, String sortBy, String sortOrder) {
@@ -165,7 +160,6 @@ public class ProductServiceImp implements ProductService {
         var productResponse = new ProductResponse();
         return getProductResponse(pageProducts, productsDTOS, productResponse);
     }
-
 
     @Override
     public String deleteProduct(Long productId) {
