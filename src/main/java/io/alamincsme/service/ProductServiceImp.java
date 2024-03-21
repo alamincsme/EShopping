@@ -117,16 +117,7 @@ public class ProductServiceImp implements ProductService {
     }
 
 
-    private ProductResponse getProductResponse(Page<Product> pageProducts, List<ProductDTO> productDTOS, ProductResponse productResponse) {
-        productResponse.setContent(productDTOS);
-        productResponse.setPageNo(pageProducts.getNumber());
-        productResponse.setPageSize(pageProducts.getSize());
-        productResponse.setTotalPages(pageProducts.getTotalPages());
-        productResponse.setTotalElements(pageProducts.getTotalElements());
-        productResponse.setLastPage(pageProducts.isLast());
 
-        return productResponse ;
-    }
 
 
     @Override
@@ -136,11 +127,38 @@ public class ProductServiceImp implements ProductService {
 
     @Override
     public ProductResponse searchProductByKeyword(String keyword, Integer pageNo, Integer pageSize, String sortBy, String sortOrder) {
-        return null;
+
+        Sort sortAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageDetails = PageRequest.of(pageNo,pageSize,sortAndOrder);
+        var pageProducts = productRepo.findByProductNameLike("%" + keyword + "%" , pageDetails);
+
+        var products = pageProducts.getContent() ;
+
+        if (products.isEmpty()) {
+            throw  new APIException(keyword + " product not found!!");
+        }
+
+        var productsDTOS = products
+                .stream()
+                .map((product) -> modelMapper.map(product , ProductDTO.class))
+                .toList();
+        var productResponse = new ProductResponse();
+        return getProductResponse(pageProducts, productsDTOS, productResponse);
     }
 
     @Override
     public String deleteProduct(Long productId) {
         return null;
+    }
+
+    private ProductResponse getProductResponse(Page<Product> pageProducts, List<ProductDTO> productDTOS, ProductResponse productResponse) {
+        productResponse.setContent(productDTOS);
+        productResponse.setPageNo(pageProducts.getNumber());
+        productResponse.setPageSize(pageProducts.getSize());
+        productResponse.setTotalPages(pageProducts.getTotalPages());
+        productResponse.setTotalElements(pageProducts.getTotalElements());
+        productResponse.setLastPage(pageProducts.isLast());
+
+        return productResponse ;
     }
 }
