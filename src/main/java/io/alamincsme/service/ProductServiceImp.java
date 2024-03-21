@@ -6,6 +6,7 @@ import io.alamincsme.model.Category;
 import io.alamincsme.model.Product;
 import io.alamincsme.payload.ProductDTO;
 import io.alamincsme.payload.ProductResponse;
+import io.alamincsme.repository.CartRepo;
 import io.alamincsme.repository.CategoryRepo;
 import io.alamincsme.repository.ProductRepo;
 import jakarta.transaction.Transactional;
@@ -16,7 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,6 +31,9 @@ public class ProductServiceImp implements ProductService {
 
     @Autowired
     private CategoryRepo categoryRepo ;
+
+    @Autowired
+    private CartRepo cartRepo ;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -122,8 +126,24 @@ public class ProductServiceImp implements ProductService {
 
     @Override
     public ProductDTO updateProduct(Long productId, Product product) {
-        return null;
+        Product productFromDB = productRepo.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+        if (productFromDB == null) {
+            throw new APIException("Product not found with productId " + productId);
+        }
+
+        product.setProductId(productId);
+        product.setCategory(productFromDB.getCategory());
+
+        double specialPrice = product.getPrice() - (product.getDiscount() * .01) * product.getPrice() ;
+        productFromDB.setSpecialPrice(specialPrice);
+
+        Product saveProduct = productRepo.save(product);
+
+        return modelMapper.map(product, ProductDTO.class);
+
     }
+
 
     @Override
     public ProductResponse searchProductByKeyword(String keyword, Integer pageNo, Integer pageSize, String sortBy, String sortOrder) {
@@ -146,10 +166,31 @@ public class ProductServiceImp implements ProductService {
         return getProductResponse(pageProducts, productsDTOS, productResponse);
     }
 
+
     @Override
     public String deleteProduct(Long productId) {
-        return null;
+        System.out.println("this is method");
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "ProductId", productId));
+
+
+        productRepo.delete(product);
+
+        return "Product with productId " + product + " deleted successfully";
+
     }
+
+//    @Override
+//    public String deleteProduct(Long productId) {
+//
+//        Product product = productRepo.findById(productId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+//
+//        productRepo.delete(product);
+//
+//        return "Product with productId: " + productId + " deleted successfully !!!";
+//    }
+
 
     private ProductResponse getProductResponse(Page<Product> pageProducts, List<ProductDTO> productDTOS, ProductResponse productResponse) {
         productResponse.setContent(productDTOS);
