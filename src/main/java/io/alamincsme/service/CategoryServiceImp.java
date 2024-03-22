@@ -1,6 +1,7 @@
 package io.alamincsme.service;
 
 import io.alamincsme.exception.APIException;
+import io.alamincsme.exception.ResourceNotFoundException;
 import io.alamincsme.model.Category;
 import io.alamincsme.payload.CategoryDTO;
 import io.alamincsme.payload.CategoryResponse;
@@ -40,7 +41,12 @@ public class CategoryServiceImp implements CategoryService {
 
     @Override
     public CategoryDTO updateCategory(Category category, Long categoryId) {
-        return null;
+        Category saveCategory = categoryRepo.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "CategoryId", categoryId));
+
+        saveCategory.setCategoryId(categoryId);
+        saveCategory = categoryRepo.save(category);
+        return modelMapper.map(saveCategory, CategoryDTO.class);
     }
 
     @Override
