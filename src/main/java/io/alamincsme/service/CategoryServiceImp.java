@@ -6,6 +6,7 @@ import io.alamincsme.model.Category;
 import io.alamincsme.payload.CategoryDTO;
 import io.alamincsme.payload.CategoryResponse;
 import io.alamincsme.repository.CategoryRepo;
+import io.alamincsme.repository.ProductRepo;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,9 @@ public class CategoryServiceImp implements CategoryService {
 
     @Autowired
     private CategoryRepo categoryRepo;
+
+    @Autowired
+    private ProductRepo productRepo;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -51,6 +55,18 @@ public class CategoryServiceImp implements CategoryService {
 
     @Override
     public String deleteCategory(Long categoryId) {
-        return null;
+        Category category = categoryRepo.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "CategoryId", categoryId));
+
+        var products = category.getProducts();
+
+        products.forEach( product -> {
+            productRepo.deleteById(product.getProductId());
+        });
+
+        categoryRepo.delete(category);
+
+        return "Category With Name " + category.getCategoryName() + " deleted successfully";
+
     }
 }
