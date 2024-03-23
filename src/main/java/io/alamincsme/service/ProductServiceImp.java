@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 @Service
 public class ProductServiceImp implements ProductService {
 
-    @Autowired
-    private ProductRepo productRepo ;
+
+    private  ProductRepo productRepo ;
 
     @Autowired
     private CategoryRepo categoryRepo ;
@@ -37,7 +37,6 @@ public class ProductServiceImp implements ProductService {
 
     @Autowired
     private ModelMapper modelMapper;
-
 
 
     @Override
