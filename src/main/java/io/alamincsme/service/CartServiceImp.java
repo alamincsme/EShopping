@@ -80,10 +80,28 @@ public class CartServiceImp implements CartService {
     }
 
 
-
     @Override
     public List<CartDTO> getAllCarts() {
-        return null;
+
+        List<Cart> carts = cartRepo.findAll();
+
+        if (carts.isEmpty()) {
+            throw new APIException("No cart exists");
+        }
+
+        List<CartDTO> cartDTOs = carts.stream().map(cart -> {
+            CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+
+            List<ProductDTO> products = cart.getCartItems().stream()
+                    .map(p -> modelMapper.map(p.getProduct(), ProductDTO.class)).collect(Collectors.toList());
+
+            cartDTO.setProducts(products);
+
+            return cartDTO;
+
+        }).collect(Collectors.toList());
+
+        return cartDTOs;
     }
 
     @Override
