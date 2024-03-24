@@ -27,4 +27,11 @@ public class CartController {
         return new  ResponseEntity<CartDTO> (cartDTO,HttpStatus.CREATED);
 
     }
+
+
+    @GetMapping("/admin/carts")
+    public ResponseEntity<List<CartDTO>> getCarts() {
+        var cartDTOs = cartService.getAllCarts();
+        return new ResponseEntity<List<CartDTO>> (cartDTOs , HttpStatus.FOUND);
+    }
 }
