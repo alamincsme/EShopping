@@ -19,17 +19,24 @@ import java.util.stream.Collectors;
 
 @Service
 public class CartServiceImp implements CartService {
-    @Autowired
-    private CartRepo cartRepo ;
+//    @Autowired
+    private final CartRepo cartRepo ;
 
-    @Autowired
-    private CartItemRepo cartItemRepo;
+//    @Autowired
+    private final CartItemRepo cartItemRepo;
 
-    @Autowired
-    private ProductRepo productRepo;
+//    @Autowired
+    private final ProductRepo productRepo;
 
-    @Autowired
-    private ModelMapper modelMapper;
+//    @Autowired
+    private final  ModelMapper modelMapper;
+
+    public CartServiceImp(CartRepo cartRepo, CartItemRepo cartItemRepo, ProductRepo productRepo, ModelMapper modelMapper) {
+        this.cartRepo = cartRepo;
+        this.cartItemRepo = cartItemRepo;
+        this.productRepo = productRepo;
+        this.modelMapper = modelMapper;
+    }
 
 
     @Override
@@ -106,7 +113,24 @@ public class CartServiceImp implements CartService {
 
     @Override
     public CartDTO getCart(String emailId, Long cartId) {
-        return null;
+        Cart cart = cartRepo.findCartByEmailAndCartId(emailId, cartId);
+
+        if (cart == null) {
+            throw new ResourceNotFoundException("Cart", "cartId", cartId);
+        }
+
+        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+
+        var products = cart
+                        .getCartItems()
+                        .stream()
+                        .map((p) -> modelMapper.map(p.getProduct(), ProductDTO.class))
+                        .toList();
+
+        cartDTO.setProducts(products);
+
+        return cartDTO ;
+
     }
 
     @Override
@@ -120,7 +144,23 @@ public class CartServiceImp implements CartService {
     }
 
     @Override
-    public String deleteProductFromCart(Long cartid, Long productId) {
-        return null;
+    public String deleteProductFromCart(Long cartId, Long productId) {
+        Cart cart = cartRepo.findById(cartId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart", "cartId", cartId));
+
+        CartItem cartItem = cartItemRepo.findCartItemByProductIdAndCartId(cartId, productId);
+
+        if (cartItem == null) {
+            throw new ResourceNotFoundException("Product", "productId", productId);
+        }
+
+        cart.setTotalPrice(cart.getTotalPrice() - (cartItem.getProductPrice() * cartItem.getQuantity()));
+
+        Product product = cartItem.getProduct();
+        product.setQuantity(product.getQuantity() + cartItem.getQuantity());
+
+        cartItemRepo.deleteCartItemByProductIdAndCartId(cartId, productId);
+
+        return "Product " + cartItem.getProduct().getProductName() + " removed from the cart !!!";
     }
 }
