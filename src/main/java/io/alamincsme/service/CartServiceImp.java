@@ -19,17 +19,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class CartServiceImp implements CartService {
-//    @Autowired
+
     private final CartRepo cartRepo ;
-
-//    @Autowired
     private final CartItemRepo cartItemRepo;
-
-//    @Autowired
     private final ProductRepo productRepo;
-
-//    @Autowired
     private final  ModelMapper modelMapper;
+
 
     public CartServiceImp(CartRepo cartRepo, CartItemRepo cartItemRepo, ProductRepo productRepo, ModelMapper modelMapper) {
         this.cartRepo = cartRepo;
