@@ -34,4 +34,15 @@ public class CartController {
         var cartDTOs = cartService.getAllCarts();
         return new ResponseEntity<List<CartDTO>> (cartDTOs , HttpStatus.FOUND);
     }
+
+    @GetMapping("/public/users/{emailId}/carts/{cartId}")
+    public ResponseEntity<CartDTO> getCart(@PathVariable String emailId , @PathVariable Long cartId) {
+        return new  ResponseEntity<CartDTO> (cartService.getCart(emailId, cartId), HttpStatus.FOUND);
+    }
+
+    @DeleteMapping("/public/carts/{cartId}/product/{productId}")
+    public ResponseEntity<String> deleteProductFromCart(@PathVariable Long cartId, @PathVariable Long productId) {
+        String status = cartService.deleteProductFromCart(cartId, productId);
+        return new ResponseEntity<String>(status, HttpStatus.OK);
+    }
 }
