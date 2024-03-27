@@ -11,7 +11,6 @@ import io.alamincsme.repository.CartItemRepo;
 import io.alamincsme.repository.CartRepo;
 import io.alamincsme.repository.ProductRepo;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -130,7 +129,7 @@ public class CartServiceImp implements CartService {
 
     @Override
     public CartDTO updateProductQuantityInCart(Long cartId, Long productId, Integer quantity) {
-        return null;
+        return null ;
     }
 
     @Override
