@@ -6,6 +6,7 @@ import io.alamincsme.model.Cart;
 import io.alamincsme.model.CartItem;
 import io.alamincsme.model.Product;
 import io.alamincsme.payload.CartDTO;
+import io.alamincsme.payload.CartItemDTO;
 import io.alamincsme.payload.ProductDTO;
 import io.alamincsme.repository.CartItemRepo;
 import io.alamincsme.repository.CartRepo;
@@ -127,58 +128,128 @@ public class CartServiceImp implements CartService {
 
     }
 
-    @Override
-    public CartDTO updateProductQuantityInCart(Long cartId, Long productId, Integer quantity) {
-        Cart cart = cartRepo.findById(cartId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart", "cartId", cartId));
-
-        Product product = productRepo.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
-
-        if (product.getQuantity() == 0) {
-            throw new APIException(product.getProductName() + " is not available");
-        }
-
-        CartItem cartItem = cartItemRepo.findCartItemByProductIdAndCartId(cartId, productId);
-
-        if (cartItem == null) {
-            throw new APIException("Product " + product.getProductName() + " not available in the cart!!!");
-        } else if (product.getQuantity() <= quantity) {
-            throw new APIException("Please, make an order of the " + product.getProductName()
-                    + " less than or equal to the quantity " + product.getQuantity() + ".");
-        }
-
-
-
-
-        double totalProductPrice = product.getSpecialPrice() * quantity ;
-        System.out.println(totalProductPrice);
-        double cartPrice = cart.getTotalPrice() - (cartItem.getProductPrice());
-        System.out.println(cartPrice);
-
+//    @Override
+//    public CartDTO updateProductQuantityInCart(Long cartId, Long productId, Integer quantity) {
 //
-//        product.setQuantity(product.getQuantity() + cartItem.getQuantity() - quantity);
+//        if (quantity == 0) {
+//            throw new APIException("Please enter a value greater than or equal to 1");
+//        }
 //
-        cartItem.setProductPrice(totalProductPrice);
-        cartItem.setDiscount(cartItem.getDiscount());
-        cartItem.setQuantity(quantity);
-
-
-        cart.setTotalPrice(cartPrice + (product.getSpecialPrice() * quantity));
+//        Cart cart = cartRepo.findById(cartId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Cart", "cartId", cartId));
 //
-        cartItem = cartItemRepo.save(cartItem);
+//        Product product = productRepo.findById(productId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+//
+//
+//        CartItem cartItem = cartItemRepo.findCartItemByProductIdAndCartId(cartId, productId);
+//
+////        if (cartItem == null) {
+////            throw new APIException("Product " + product.getProductName() + " not available in the cart!!!");
+////        } else if (product.getQuantity() <= quantity) {
+////            throw new APIException("Please, make an order of the " + product.getProductName()
+////                    + " less than or equal to the quantity " + product.getQuantity() + ".");
+////        }
+//        int totalQuantity = 0 ;
+//
+//        if (product.getQuantity() >= cartItem.getQuantity() + quantity && quantity == 1) {
+//            totalQuantity = cartItem.getQuantity() + quantity ;
+//            //complete
+//        } else if (cartItem.getQuantity() - quantity != 0 && quantity == - 1) {
+//            //complete
+//        }
+//
+//        double totalProductPrice = product.getSpecialPrice() * quantity ;
+//        System.out.println(totalProductPrice);
+//        double cartPrice = cart.getTotalPrice() - (cartItem.getProductPrice());
+//        System.out.println(cartPrice);
+//
+////
+////        product.setQuantity(product.getQuantity() + cartItem.getQuantity() - quantity);
+////
+//        cartItem.setProductPrice(totalProductPrice);
+//        cartItem.setDiscount(cartItem.getDiscount());
+//        cartItem.setQuantity(quantity);
+//
+//
+//        cart.setTotalPrice(cartPrice + (product.getSpecialPrice() * quantity));
+////
+//        cartItem = cartItemRepo.save(cartItem);
+//
+//        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+//
+//       var productDTOs  = cart.getCartItems().stream()
+//                .map(p -> modelMapper.map(p.getProduct(), ProductDTO.class)).collect(Collectors.toList());
+//
+//
+//        cartDTO.setProducts(productDTOs);
+//        return cartDTO ;
+//
+//    }
+//
+@Override
+public CartDTO updateProductQuantityInCart(Long cartId, Long productId, Integer quantity) {
 
-        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
-
-        List<ProductDTO> productDTOs = cart.getCartItems().stream()
-                .map(p -> modelMapper.map(p.getProduct(), ProductDTO.class)).collect(Collectors.toList());
-
-        cartDTO.setProducts(productDTOs);
-
-        return cartDTO;
-
+    if (quantity == 0) {
+        throw new APIException("Please enter a value greater than or equal to 1");
     }
 
+    Cart cart = cartRepo.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("Cart", "cartId", cartId));
+
+    Product product = productRepo.findById(productId)
+            .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+
+    CartItem cartItem = cartItemRepo.findCartItemByProductIdAndCartId(cartId, productId);
+
+    int updatedQuantity;
+    if (quantity == 1) {
+        // Increment quantity by one
+        updatedQuantity = cartItem.getQuantity() + 1;
+    } else if (quantity == -1) {
+        // Decrement quantity by one
+        updatedQuantity = cartItem.getQuantity() - 1;
+    } else {
+        // Set quantity directly
+        updatedQuantity = quantity;
+    }
+
+    if (updatedQuantity < 1 || updatedQuantity > product.getQuantity()) {
+        throw new APIException("Invalid quantity. Please enter a valid quantity.");
+    }
+
+    double totalProductPrice = product.getSpecialPrice() * updatedQuantity;
+
+    // Calculate the difference in the cart price
+    double cartPriceDifference = totalProductPrice - cartItem.getProductPrice();
+
+    // Update cart total price
+    double cartTotalPrice = cart.getTotalPrice() + cartPriceDifference;
+
+    // Update cart item with new quantity and price
+    cartItem.setQuantity(updatedQuantity);
+    cartItem.setProductPrice(totalProductPrice);
+
+    // Save the updated cart item
+    cartItem = cartItemRepo.save(cartItem);
+
+    // Update cart total price
+    cart.setTotalPrice(cartTotalPrice);
+
+    // Save the updated cart
+    cart = cartRepo.save(cart);
+
+    // Map the updated cart to DTO
+    CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+
+    // Map the products in the cart to DTOs
+    List<ProductDTO> productDTOs = cart.getCartItems().stream()
+            .map(p -> modelMapper.map(p.getProduct(), ProductDTO.class))
+            .collect(Collectors.toList());
+
+    cartDTO.setProducts(productDTOs);
+    return cartDTO;
+}
 
 
     @Override
