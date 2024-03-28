@@ -129,13 +129,57 @@ public class CartServiceImp implements CartService {
 
     @Override
     public CartDTO updateProductQuantityInCart(Long cartId, Long productId, Integer quantity) {
-        return null ;
+        Cart cart = cartRepo.findById(cartId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart", "cartId", cartId));
+
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+
+        if (product.getQuantity() == 0) {
+            throw new APIException(product.getProductName() + " is not available");
+        }
+
+        CartItem cartItem = cartItemRepo.findCartItemByProductIdAndCartId(cartId, productId);
+
+        if (cartItem == null) {
+            throw new APIException("Product " + product.getProductName() + " not available in the cart!!!");
+        } else if (product.getQuantity() <= quantity) {
+            throw new APIException("Please, make an order of the " + product.getProductName()
+                    + " less than or equal to the quantity " + product.getQuantity() + ".");
+        }
+
+
+
+
+        double totalProductPrice = product.getSpecialPrice() * quantity ;
+        System.out.println(totalProductPrice);
+        double cartPrice = cart.getTotalPrice() - (cartItem.getProductPrice());
+        System.out.println(cartPrice);
+
+//
+//        product.setQuantity(product.getQuantity() + cartItem.getQuantity() - quantity);
+//
+        cartItem.setProductPrice(totalProductPrice);
+        cartItem.setDiscount(cartItem.getDiscount());
+        cartItem.setQuantity(quantity);
+
+
+        cart.setTotalPrice(cartPrice + (product.getSpecialPrice() * quantity));
+//
+        cartItem = cartItemRepo.save(cartItem);
+
+        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+
+        List<ProductDTO> productDTOs = cart.getCartItems().stream()
+                .map(p -> modelMapper.map(p.getProduct(), ProductDTO.class)).collect(Collectors.toList());
+
+        cartDTO.setProducts(productDTOs);
+
+        return cartDTO;
+
     }
 
-    @Override
-    public void updateProductInCarts(Long cartId, Long productId) {
 
-    }
 
     @Override
     public String deleteProductFromCart(Long cartId, Long productId) {
