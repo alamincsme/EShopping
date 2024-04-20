@@ -82,21 +82,66 @@ public class OrderServiceImpl implements OrderService{
         }
 
         orderItemRepo.saveAll(orderItems);
+        double totalPrice = cart.getTotalPrice();
 
-        cart.getCartItems()
-                .forEach(cartItem -> {
-                    int quantity = cartItem.getQuantity();
-                    Product product = cartItem.getProduct();
-                    cartService.deleteProductFromCart(cartId, product.getProductId());
-                    product.setQuantity(product.getQuantity() - quantity);
-                    productService.updateProduct(product.getProductId(), product);
-                });
+        System.out.println("Size : " + cartItems.size());
+        for (CartItem cartItem : cartItems) {
+            System.out.println("Product price : " + cartItem.getProductPrice() );
+            totalPrice -= cartItem.getProductPrice() * cartItem.getQuantity();
+            System.out.println("Total Price : " + totalPrice);
+        }
 
-//        OrderDTO orderDTO = modelMapper.map(saveOrder, OrderDTO.class);
 
-//        orderItems.forEach(item -> orderDTO.getOrderItems().add(modelMapper.map(item, OrderItemDTO.class)));
+        cart.setTotalPrice(totalPrice);
 
-        return modelMapper.map(saveOrder, OrderDTO.class);
+        // Remove ordered items from the cart
+        cart.getCartItems().clear();
+
+        // Update the cart's total price in the database
+        System.out.println("cart price : " + cart.getTotalPrice());
+
+
+
+//        cart.getCartItems().forEach(item -> {
+//            int quantity = item.getQuantity();
+//            Product product = item.getProduct();
+//
+//            // Remove item from the cart
+//            cartService.deleteProductFromCart(cartId, item.getProduct().getProductId());
+//
+//            // Update product quantity
+//            product.setQuantity(product.getQuantity() - quantity);
+//        });
+
+        cart.getCartItems().forEach(item -> {
+            int quantity = item.getQuantity();
+            Product product = item.getProduct();
+
+            // Logging for debugging
+            System.out.println("Deleting item: " + item);
+
+            // Remove item from the cart
+            cartService.deleteProductFromCart(cartId, item.getProduct().getProductId());
+
+            // Logging for debugging
+            System.out.println("Updated product quantity: " + product.getQuantity());
+
+            // Update product quantity
+            product.setQuantity(product.getQuantity() - quantity);
+        });
+
+       // Logging for debugging
+        System.out.println("Updated cart: " + cart);
+
+       // Save changes to the cart (removed items and updated total price)
+        cartRepo.save(cart);
+
+
+
+        OrderDTO orderDTO = modelMapper.map(saveOrder, OrderDTO.class);
+        orderItems.forEach(item -> orderDTO.getOrderItems().add(modelMapper.map(item, OrderItemDTO.class)));
+
+        return orderDTO;
 
     }
 
