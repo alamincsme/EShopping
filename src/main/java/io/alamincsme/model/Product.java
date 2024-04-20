@@ -47,18 +47,5 @@ public class Product {
 //    private List<OrderItem> orderItems = new ArrayList<>();
 
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "productId=" + productId +
-                ", productName='" + productName + '\'' +
-                ", description='" + description + '\'' +
-                ", quantity=" + quantity +
-                ", price=" + price +
-                ", discount=" + discount +
-                ", specialPrice=" + specialPrice +
-                ", category=" + category +
-                ", products=" + products +
-                '}';
-    }
+
 }

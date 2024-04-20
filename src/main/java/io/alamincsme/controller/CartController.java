@@ -17,27 +17,35 @@ public class CartController {
     @Autowired
     private CartService cartService ;
 
-    @PostMapping("/public/carts/{cartId}/products/{productId}/quantity/{quantity}")
-    public ResponseEntity<CartDTO> addProductToCart(@PathVariable Long cartId,
-                                                    @PathVariable Long productId,
-                                                    @PathVariable Integer quantity){
+//    @PostMapping("/public/carts/{cartId}/products/{productId}/quantity/{quantity}")
+//    public ResponseEntity<CartDTO> addProductToCart(@PathVariable Long cartId,
+//                                                    @PathVariable Long productId,
+//                                                    @PathVariable Integer quantity){
+//
+//        var cartDTO = cartService.addProductToCart(cartId, productId, quantity);
+//
+//        return new  ResponseEntity<CartDTO> (cartDTO,HttpStatus.CREATED);
+//
+//    }
 
-        var cartDTO = cartService.addProductToCart(cartId, productId, quantity);
 
-        return new  ResponseEntity<CartDTO> (cartDTO,HttpStatus.CREATED);
+//    @GetMapping("/admin/carts")
+//    public ResponseEntity<List<CartDTO>> getCarts() {
+//        var cartDTOs = cartService.getAllCarts();
+//        return new ResponseEntity<List<CartDTO>> (cartDTOs , HttpStatus.FOUND);
+//    }
+//
+//    @GetMapping("/public/users/{emailId}/carts/{cartId}")
+//    public ResponseEntity<CartDTO> getCart(@PathVariable String emailId , @PathVariable Long cartId) {
+//        return new  ResponseEntity<CartDTO> (cartService.getCart(emailId, cartId), HttpStatus.FOUND);
+//    }
 
-    }
 
+    @PutMapping("/public/carts/{cartId}/products/{productId}/quantity/{quantity}")
+    public ResponseEntity<CartDTO> updateCartProduct(@PathVariable Long cartId, @PathVariable Long productId, @PathVariable Integer quantity) {
+        CartDTO cartDTO = cartService.updateProductQuantityInCart(cartId, productId, quantity);
 
-    @GetMapping("/admin/carts")
-    public ResponseEntity<List<CartDTO>> getCarts() {
-        var cartDTOs = cartService.getAllCarts();
-        return new ResponseEntity<List<CartDTO>> (cartDTOs , HttpStatus.FOUND);
-    }
-
-    @GetMapping("/public/users/{emailId}/carts/{cartId}")
-    public ResponseEntity<CartDTO> getCart(@PathVariable String emailId , @PathVariable Long cartId) {
-        return new  ResponseEntity<CartDTO> (cartService.getCart(emailId, cartId), HttpStatus.FOUND);
+        return new ResponseEntity<CartDTO>(cartDTO, HttpStatus.OK);
     }
 
     @DeleteMapping("/public/carts/{cartId}/product/{productId}")

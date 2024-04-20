@@ -34,99 +34,99 @@ public class CartServiceImp implements CartService {
     }
 
 
-    @Override
-    public CartDTO addProductToCart(Long cartId, Long productId, Integer quantity) {
-        Cart cart = cartRepo.findById(cartId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart", "cartId", cartId));
-        Product product = productRepo.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
-
-
-        CartItem cartItem = cartItemRepo.findCartItemByProductIdAndCartId(cartId, productId);
-
-        if (cartItem != null) {
-            throw new APIException("Product " + product.getProductName() + " already exists in the cart");
-        }
-
-        if (product.getQuantity() == 0) {
-            throw new APIException(product.getProducts() + " is not available");
-        }
-
-        if (product.getQuantity() < quantity) {
-            throw  new APIException("Please! make an order of the " + product.getProductName() + " less than or equal ot the quantity " + product.getQuantity());
-        }
-
-        CartItem newCartItem = new CartItem();
-        newCartItem.setProduct(product);
-        newCartItem.setCart(cart);
-        newCartItem.setQuantity(quantity);
-        newCartItem.setDiscount(product.getDiscount());
-        newCartItem.setProductPrice(product.getSpecialPrice());
-
-        cartItemRepo.save(newCartItem);
-
-        product.setQuantity(product.getQuantity() - quantity);
-
-        cart.setTotalPrice(cart.getTotalPrice()  + product.getSpecialPrice() * quantity);
-
-        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
-        List<ProductDTO> productDTOS = cart.getCartItems()
-                                            .stream()
-                                            .map(p -> modelMapper.map(p.getProduct(), ProductDTO.class))
-                                            .collect(Collectors.toList());
-
-//        for (ProductDTO productDTO : productDTOS) System.out.println(productDTO.getDescription());
-        cartDTO.setProducts(productDTOS);
-        return cartDTO ;
-
-    }
-
-
-    @Override
-    public List<CartDTO> getAllCarts() {
-
-        List<Cart> carts = cartRepo.findAll();
-
-        if (carts.isEmpty()) {
-            throw new APIException("No cart exists");
-        }
-
-        List<CartDTO> cartDTOs = carts.stream().map(cart -> {
-            CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
-
-            List<ProductDTO> products = cart.getCartItems().stream()
-                    .map(p -> modelMapper.map(p.getProduct(), ProductDTO.class)).collect(Collectors.toList());
-
-            cartDTO.setProducts(products);
-
-            return cartDTO;
-
-        }).collect(Collectors.toList());
-
-        return cartDTOs;
-    }
-
-    @Override
-    public CartDTO getCart(String emailId, Long cartId) {
-        Cart cart = cartRepo.findCartByEmailAndCartId(emailId, cartId);
-
-        if (cart == null) {
-            throw new ResourceNotFoundException("Cart", "cartId", cartId);
-        }
-
-        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
-
-        var products = cart
-                        .getCartItems()
-                        .stream()
-                        .map((p) -> modelMapper.map(p.getProduct(), ProductDTO.class))
-                        .toList();
-
-        cartDTO.setProducts(products);
-
-        return cartDTO ;
-
-    }
+//    @Override
+//    public CartDTO addProductToCart(Long cartId, Long productId, Integer quantity) {
+//        Cart cart = cartRepo.findById(cartId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Cart", "cartId", cartId));
+//        Product product = productRepo.findById(productId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+//
+//
+//        CartItem cartItem = cartItemRepo.findCartItemByProductIdAndCartId(cartId, productId);
+//
+//        if (cartItem != null) {
+//            throw new APIException("Product " + product.getProductName() + " already exists in the cart");
+//        }
+//
+//        if (product.getQuantity() == 0) {
+//            throw new APIException(product.getProducts() + " is not available");
+//        }
+//
+//        if (product.getQuantity() < quantity) {
+//            throw  new APIException("Please! make an order of the " + product.getProductName() + " less than or equal ot the quantity " + product.getQuantity());
+//        }
+//
+//        CartItem newCartItem = new CartItem();
+//        newCartItem.setProduct(product);
+//        newCartItem.setCart(cart);
+//        newCartItem.setQuantity(quantity);
+//        newCartItem.setDiscount(product.getDiscount());
+//        newCartItem.setProductPrice(product.getSpecialPrice());
+//
+//        cartItemRepo.save(newCartItem);
+//
+//        product.setQuantity(product.getQuantity() - quantity);
+//
+//        cart.setTotalPrice(cart.getTotalPrice()  + product.getSpecialPrice() * quantity);
+//
+//        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+//        List<ProductDTO> productDTOS = cart.getCartItems()
+//                                            .stream()
+//                                            .map(p -> modelMapper.map(p.getProduct(), ProductDTO.class))
+//                                            .collect(Collectors.toList());
+//
+////        for (ProductDTO productDTO : productDTOS) System.out.println(productDTO.getDescription());
+//        cartDTO.setProducts(productDTOS);
+//        return cartDTO ;
+//
+//    }
+//
+//
+//    @Override
+//    public List<CartDTO> getAllCarts() {
+//
+//        List<Cart> carts = cartRepo.findAll();
+//
+//        if (carts.isEmpty()) {
+//            throw new APIException("No cart exists");
+//        }
+//
+//        List<CartDTO> cartDTOs = carts.stream().map(cart -> {
+//            CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+//
+//            List<ProductDTO> products = cart.getCartItems().stream()
+//                    .map(p -> modelMapper.map(p.getProduct(), ProductDTO.class)).collect(Collectors.toList());
+//
+//            cartDTO.setProducts(products);
+//
+//            return cartDTO;
+//
+//        }).collect(Collectors.toList());
+//
+//        return cartDTOs;
+//    }
+//
+//    @Override
+//    public CartDTO getCart(String emailId, Long cartId) {
+//        Cart cart = cartRepo.findCartByEmailAndCartId(emailId, cartId);
+//
+//        if (cart == null) {
+//            throw new ResourceNotFoundException("Cart", "cartId", cartId);
+//        }
+//
+//        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+//
+//        var products = cart
+//                        .getCartItems()
+//                        .stream()
+//                        .map((p) -> modelMapper.map(p.getProduct(), ProductDTO.class))
+//                        .toList();
+//
+//        cartDTO.setProducts(products);
+//
+//        return cartDTO ;
+//
+//    }
 
 //    @Override
 //    public CartDTO updateProductQuantityInCart(Long cartId, Long productId, Integer quantity) {
@@ -202,7 +202,7 @@ public CartDTO updateProductQuantityInCart(Long cartId, Long productId, Integer 
 
     CartItem cartItem = cartItemRepo.findCartItemByProductIdAndCartId(cartId, productId);
 
-    int updatedQuantity;
+    int updatedQuantity = 0;
     if (quantity == 1) {
         // Increment quantity by one
         updatedQuantity = cartItem.getQuantity() + 1;
@@ -243,11 +243,11 @@ public CartDTO updateProductQuantityInCart(Long cartId, Long productId, Integer 
     CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
 
     // Map the products in the cart to DTOs
-    List<ProductDTO> productDTOs = cart.getCartItems().stream()
-            .map(p -> modelMapper.map(p.getProduct(), ProductDTO.class))
-            .collect(Collectors.toList());
+    List<CartItemDTO> cartItemDTOs = cart.getCartItems().stream()
+            .map(p -> modelMapper.map(p, CartItemDTO.class))
+            .toList();
 
-    cartDTO.setProducts(productDTOs);
+    cartDTO.setCartItemDTOs(cartItemDTOs);
     return cartDTO;
 }
 

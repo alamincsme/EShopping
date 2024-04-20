@@ -10,7 +10,7 @@ public interface CartService {
 //    List<CartDTO> getAllCarts();
 //    CartDTO getCart(String emailId, Long cartId) ;
     CartDTO updateProductQuantityInCart(Long cartId, Long productId, Integer quantity) ;
-    String deleteProductFromCart(Long cartid, Long productId);
+    String deleteProductFromCart(Long cartId, Long productId);
 
 
 }

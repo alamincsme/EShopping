@@ -29,5 +29,4 @@ public class CartItem {
     private double productPrice;
 
 
-
 }
