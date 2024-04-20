@@ -28,11 +28,17 @@ public class OrderController {
     }
 
     @GetMapping("/public/users/{emailId}/orders/{orderId}")
-   public ResponseEntity<OrderDTO> getOrderUser(@PathVariable String emailId, @PathVariable Long orderId) {
+    public ResponseEntity<OrderDTO> getOrderUser(@PathVariable String emailId, @PathVariable Long orderId) {
         return new ResponseEntity<>(orderService.getOrder(emailId, orderId), HttpStatus.FOUND);
     }
 
 
+    @PutMapping("/admin/users/{emailId}/orders/{orderId}/orderStatus/{orderStatus}")
+    public ResponseEntity<OrderDTO> updateOrder(
+            @PathVariable String emailId, @PathVariable Long orderId,
+            @PathVariable String orderStatus)  {
+        return new ResponseEntity<>(orderService.updateOrder(emailId, orderId, orderStatus), HttpStatus.OK);
+    }
 
 
 
