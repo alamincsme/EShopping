@@ -7,6 +7,7 @@ import io.alamincsme.payload.OrderDTO;
 import io.alamincsme.payload.OrderItemDTO;
 import io.alamincsme.repository.*;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.Banner;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
 
@@ -143,6 +144,17 @@ public class OrderServiceImpl implements OrderService{
                 .collect(Collectors.toList());
 
         return orderDTOs;
+    }
+
+    @Override
+    public OrderDTO getOrder(String emailId, Long orderId) {
+        Order order = orderRepo.findOrderByEmailAndOrderId(emailId, orderId);
+        if (order == null) {
+            throw  new ResourceNotFoundException("Order", "OrderId", orderId);
+        }
+
+        return  modelMapper.map(order, OrderDTO.class);
+
     }
 
 
