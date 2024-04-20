@@ -1,8 +1,7 @@
 package io.alamincsme.service;
 
-import org.springframework.stereotype.Service;
+import io.alamincsme.payload.OrderDTO;
 
-@Service
 public interface OrderService {
-
+    OrderDTO placeOrder(String emailId, Long cartId, String paymentMethod);
 }
