@@ -92,48 +92,34 @@ public class OrderServiceImpl implements OrderService{
         }
 
 
-        cart.setTotalPrice(totalPrice);
+//        cart.setTotalPrice(totalPrice);
 
-        // Remove ordered items from the cart
-        cart.getCartItems().clear();
+//         Remove ordered items from the cart
+//        cart.getCartItems().clear();
 
-        // Update the cart's total price in the database
+//         Update the cart's total price in the database
         System.out.println("cart price : " + cart.getTotalPrice());
 
 
-
-//        cart.getCartItems().forEach(item -> {
-//            int quantity = item.getQuantity();
-//            Product product = item.getProduct();
-//
-//            // Remove item from the cart
-//            cartService.deleteProductFromCart(cartId, item.getProduct().getProductId());
-//
-//            // Update product quantity
-//            product.setQuantity(product.getQuantity() - quantity);
-//        });
-
+        System.out.println("cart item size : " + cart.getCartItems().size());
         cart.getCartItems().forEach(item -> {
             int quantity = item.getQuantity();
             Product product = item.getProduct();
-
-            // Logging for debugging
-            System.out.println("Deleting item: " + item);
-
+            System.out.println("total product : " + product.getQuantity() + " " + quantity);
+            product.setQuantity(product.getQuantity() - quantity);
+            productService.updateProduct(product.getProductId(), product);
             // Remove item from the cart
             cartService.deleteProductFromCart(cartId, item.getProduct().getProductId());
 
-            // Logging for debugging
-            System.out.println("Updated product quantity: " + product.getQuantity());
-
             // Update product quantity
+
             product.setQuantity(product.getQuantity() - quantity);
         });
 
-       // Logging for debugging
-        System.out.println("Updated cart: " + cart);
+        cart.setTotalPrice(totalPrice);
 
        // Save changes to the cart (removed items and updated total price)
+        System.out.println(cart.getTotalPrice());
         cartRepo.save(cart);
 
 
