@@ -13,6 +13,7 @@ import org.springframework.ui.ModelMap;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService{
@@ -22,7 +23,6 @@ public class OrderServiceImpl implements OrderService{
     private final OrderRepo orderRepo;
     private final OrderItemRepo orderItemRepo;
     private final PaymentRepo paymentRepo;
-
     private final CartService cartService ;
     private final ProductService productService;
     private  final ModelMapper modelMapper ;
@@ -129,6 +129,20 @@ public class OrderServiceImpl implements OrderService{
 
         return orderDTO;
 
+    }
+
+    @Override
+    public List<OrderDTO> getOrdersByUser(String emailId) {
+        List<Order> orders = orderRepo.findAllByEmail(emailId);
+        if (orders.isEmpty()) {
+            throw  new APIException("No order placed yet by user with email " + emailId);
+        }
+
+        List<OrderDTO> orderDTOs;
+        orderDTOs = orders.stream().map(order -> modelMapper.map(order, OrderDTO.class))
+                .collect(Collectors.toList());
+
+        return orderDTOs;
     }
 
 
