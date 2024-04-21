@@ -5,9 +5,14 @@ import io.alamincsme.exception.ResourceNotFoundException;
 import io.alamincsme.model.*;
 import io.alamincsme.payload.OrderDTO;
 import io.alamincsme.payload.OrderItemDTO;
+import io.alamincsme.payload.OrderResponse;
 import io.alamincsme.repository.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.Banner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
 
@@ -155,6 +160,42 @@ public class OrderServiceImpl implements OrderService{
 
         return  modelMapper.map(order, OrderDTO.class);
 
+    }
+
+    @Override
+    public OrderDTO updateOrder(String emailId, Long orderId, String orderStatus) {
+        Order order = orderRepo.findOrderByEmailAndOrderId(emailId, orderId);
+        if (order == null) {
+            throw  new ResourceNotFoundException("Order", "OrderId", orderId);
+        }
+
+        order.setOrderStatus(orderStatus);
+        orderRepo.save(order);
+
+        return modelMapper.map(order, OrderDTO.class);
+
+    }
+
+    @Override
+    public OrderResponse getAllOrders(Integer pageNo, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
+        Pageable pageDetails = PageRequest.of(pageNo, pageSize, sortByAndOrder);
+        Page<Order> pageOrders = orderRepo.findAll(pageDetails);
+        List<Order> orders = pageOrders.getContent();
+
+        List<OrderDTO> orderDTOs = orders.stream().map(order -> modelMapper.map(order, OrderDTO.class)).toList();
+        if (orderDTOs.isEmpty()) {
+            throw new APIException("No order placed yet by users");
+        }
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setContent(orderDTOs);
+        orderResponse.setPageNumber(pageOrders.getNumber());
+        orderResponse.setPageSize(pageOrders.getSize());
+        orderResponse.setTotalElements(pageOrders.getTotalElements());
+        orderResponse.setTotalPages(pageOrders.getTotalPages());
+        return orderResponse ;
     }
 
 
