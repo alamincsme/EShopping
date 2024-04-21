@@ -27,16 +27,18 @@ import java.util.stream.Collectors;
 public class ProductServiceImp implements ProductService {
 
 
-    private  ProductRepo productRepo ;
 
-    @Autowired
-    private CategoryRepo categoryRepo ;
+    private final ProductRepo productRepo ;
+    private final CategoryRepo categoryRepo ;
+    private final CartRepo cartRepo ;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    private CartRepo cartRepo ;
-
-    @Autowired
-    private ModelMapper modelMapper;
+    public ProductServiceImp(ProductRepo productRepo, CategoryRepo categoryRepo, CartRepo cartRepo, ModelMapper modelMapper) {
+        this.productRepo = productRepo;
+        this.categoryRepo = categoryRepo;
+        this.cartRepo = cartRepo;
+        this.modelMapper = modelMapper;
+    }
 
 
     @Override
