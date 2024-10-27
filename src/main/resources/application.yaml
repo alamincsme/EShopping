@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: EShopping
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/eshoppers
+  cassandra:
+    username: root
+  activemq:
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+
+server:
+  port: 8080
